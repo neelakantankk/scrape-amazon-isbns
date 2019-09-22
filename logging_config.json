@@ -1,0 +1,57 @@
+{
+        "version": 1,
+        "formatters": {
+            "log_formatter": {
+                "class": "logging.Formatter",
+                "format": "%(name)s : %(levelname)s : %(asctime)s : Line %(lineno)d : %(message)s ",
+                "datefmt": "%a, %Y/%m/%d %I:%M:%S %p"
+            }
+        },
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "level": "DEBUG",
+                "formatter":"log_formatter"
+            },
+            "errors": {
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": "logs/errors.log",
+                "mode": "a",
+                "level":"ERROR",
+                "formatter": "log_formatter",
+                "maxBytes":20480,
+                "backupCount":2
+            },
+            "warnings": {
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": "logs/warnings.log",
+                "mode": "a",
+                "level":"WARNING",
+                "formatter": "log_formatter",
+                "maxBytes":20480,
+                "backupCount":2
+            },
+            "info": {
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": "logs/info.log",
+                "mode": "w",
+                "level":"INFO",
+                "formatter": "log_formatter",
+                "maxBytes":20480,
+                "backupCount":5
+            },
+            "debug": {
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": "logs/debug.log",
+                "mode": "w",
+                "level":"DEBUG",
+                "formatter": "log_formatter",
+                "maxBytes":20480,
+                "backupCount":7
+            }
+        },
+        "root": {
+            "level": "INFO",
+            "handlers": ["console", "errors","warnings","info","debug"]
+        }
+    }
