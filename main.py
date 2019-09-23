@@ -14,6 +14,7 @@ import json
 from random import choice
 from sys import exit as sysExit
 from isbn_converter import isbn_converter
+from extract_from_amazon_page import extract_from_amazon_page
 
 
 #---------------------Required Amazon URLs-----------------------------------#
@@ -86,10 +87,8 @@ def main():
         fObject.write(offers_page.content)
     logger.debug(f"File offers_page_{isbn_converter(isbn)}.html written")
 
-    offers_page_body = lhtml.fromstring(offers_page.content)
+    extract_from_amazon_page(offers_page)
 
-    for node in offers_page_body.xpath(".//div[@id='olpOfferList']//div[contains(concat(' ',normalize-space(@class),' '),' olpSellerColumn ')]"):
-        print(f"{node}")
 
 if __name__ == '__main__':
     main()
