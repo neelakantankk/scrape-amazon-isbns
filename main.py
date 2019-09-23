@@ -67,6 +67,7 @@ def main():
             'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0'
             }
 
+    #-------------------------------------Calling random ISBN------------#
     isbn = choice(trial_list_of_ISBNs)
 
     logger.debug(f"ISBN to fetch: {isbn}")
@@ -81,10 +82,14 @@ def main():
         logger.info(f"Fetched page {url_to_page}")
 
     logger.debug("Writing to file...")
-    with file_dump_folder.joinpath("offers_page.html").open(mode="wb") as fObject:
+    with file_dump_folder.joinpath(f"offers_page_{isbn_converter(isbn)}.html").open(mode="wb") as fObject:
         fObject.write(offers_page.content)
-    logger.debug(f"File offers_page.html written")
+    logger.debug(f"File offers_page_{isbn_converter(isbn)}.html written")
 
+    offers_page_body = lhtml.fromstring(offers_page.content)
+
+    for node in offers_page_body.xpath(".//div[@id='olpOfferList']//div[contains(concat(' ',normalize-space(@class),' '),' olpSellerColumn ')]"):
+        print(f"{node}")
 
 if __name__ == '__main__':
     main()
