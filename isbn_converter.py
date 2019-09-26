@@ -2,7 +2,7 @@
 
 import argparse
 
-from exceptions import InvalidISBNException
+from exceptions import InvalidISBNError
 
 def isbn_converter(isbn):
     if len(isbn) == 13:
@@ -10,7 +10,7 @@ def isbn_converter(isbn):
     elif len(isbn) == 10:
         return isbn10_to_isbn13(isbn)
     else:
-        raise InvalidISBNException
+        raise InvalidISBNError
 
 def isbn13_to_isbn10(isbn):
     isbn10 = isbn[3:-1]
@@ -54,7 +54,7 @@ def main():
     for isbn in isbns:
         try:
             print(isbn_converter(isbn))
-        except InvalidISBNException:
+        except InvalidISBNError:
             print(f"{isbn} is invalid")
 
 

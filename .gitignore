@@ -4,3 +4,4 @@ logs/*
 file-dump/*
 __pycache__/*
 notes.txt
+*.swp

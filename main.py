@@ -2,29 +2,16 @@
 """
 Created on Thu Aug 22 12:07:59 2019
 
-@author: k999neel
+@author: Neelakantan 
 """
 
-import requests
-import lxml.html as lhtml
 import pathlib
 import logging
 import logging.config
 import json
-from random import choice
-from sys import exit as sysExit
+from get_buying_options import get_buying_options
+from exceptions import PageNotRetrievedError
 from isbn_converter import isbn_converter
-from extract_from_amazon_page import extract_from_amazon_page
-
-
-#---------------------Required Amazon URLs-----------------------------------#
-amazon_urls = {
-        'search':r'https://amazon.com/s',
-        'buying_options':r'https://amazon.com/gp/offer-listing/',
-        }
-
-# When looking at product details, always use keyword ref=mt_paperback
-# Search for id productDetailsTable
 
 trial_list_of_ISBNs = [
         '9781292040622',
@@ -47,12 +34,19 @@ trial_list_of_ISBNs = [
 #-------------------------------__main__-------------------------------------#
 def main():
 
+    #---------------------Required Amazon URLs-----------------------#
+    amazon_urls = {
+            'search':r'https://amazon.com/s',
+            'buying_options':r'https://amazon.com/gp/offer-listing/',
+            }
+
+
     #-----------------------------Set up logging-------------------------#
     if not pathlib.Path.cwd().joinpath('logs').exists():
         pathlib.Path.cwd().joinpath('logs').mkdir()
     if not pathlib.Path.cwd().joinpath('file-dump').exists():
         pathlib.Path.cwd().joinpath('file-dump').mkdir()
-
+    
     file_dump_folder = pathlib.Path.cwd().joinpath('file-dump')
 
     with open('logging_config.json','r',encoding='utf-8') as fObject:
@@ -62,33 +56,36 @@ def main():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
-#    -----------------------------Set up session--------------------------#
-    session = requests.Session()
-    session.headers = {
-            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0'
-            }
-
-    #-------------------------------------Calling random ISBN------------#
-    isbn = choice(trial_list_of_ISBNs)
-
-    logger.debug(f"ISBN to fetch: {isbn}")
+    #-------------------------------------Calling ISBNs------------#
+    item_results = dict()
     
-    url_to_page = f'{amazon_urls["buying_options"]}{isbn_converter(isbn)}'
-    logger.debug(f"Fetching page {url_to_page}")
-    offers_page = session.get(url_to_page)
+    for isbn in trial_list_of_ISBNs:
 
-    if offers_page.status_code != 200:
-        logger.error(f"Fetching {isbn} from {url_to_page} did not work")
-    else:
-        logger.info(f"Fetched page {url_to_page}")
+        logger.debug(f"ISBN to fetch: {isbn}")
+        url_to_page = f'{amazon_urls["buying_options"]}{isbn_converter(isbn)}'
 
-    logger.debug("Writing to file...")
-    with file_dump_folder.joinpath(f"offers_page_{isbn_converter(isbn)}.html").open(mode="wb") as fObject:
-        fObject.write(offers_page.content)
-    logger.debug(f"File offers_page_{isbn_converter(isbn)}.html written")
+        try:
+            logger.debug(f"Getting buying options for {isbn}")
+            item_results[isbn] = get_buying_options(url_to_page)
+            logger.debug(f"Buying options retrieved")
+        except PageNotRetrievedError as e:
+            logger.error(f"{e}")
 
-    extract_from_amazon_page(offers_page)
 
+    with file_dump_folder.joinpath(
+            "ISBN_and_Buying_Options.txt").open(
+                    "w",encoding='utf-8') as fObject:
+        for isbn in item_results.keys():
+            fObject.write("{:#^80}\n".format(' '))
+            fObject.write(f"ISBN: {isbn}\n")
+            for olpOffer in item_results[isbn]:
+                fObject.write("{:-^80}\n".format(''))
+                fObject.write(f"\tSeller: {olpOffer.olpSeller}\n")
+                fObject.write(f"\tLink to Seller: {olpOffer.olpSellerLink}\n")
+                fObject.write(f"\tCondition: {olpOffer.olpCondition}\n")
+                fObject.write(f"\tShips from: {olpOffer.olpDelivery}\n")
+                fObject.write(f"\tPrice (including shipping): {olpOffer.olpPrice}\n")
+            fObject.write("{:#^80}\n".format(' '))
 
 if __name__ == '__main__':
     main()
