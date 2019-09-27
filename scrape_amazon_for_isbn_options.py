@@ -32,7 +32,7 @@ trial_list_of_ISBNs = [
 
 
 #-------------------------------__main__-------------------------------------#
-def main():
+def scrape_amazon_for_isbn_options(list_of_isbns):
 
     #---------------------Required Amazon URLs-----------------------#
     amazon_urls = {
@@ -59,7 +59,7 @@ def main():
     #-------------------------------------Calling ISBNs------------#
     item_results = dict()
     
-    for isbn in trial_list_of_ISBNs:
+    for isbn in list_of_ISBNs:
 
         logger.debug(f"ISBN to fetch: {isbn}")
         url_to_page = f'{amazon_urls["buying_options"]}{isbn_converter(isbn)}'
@@ -89,4 +89,6 @@ def main():
             fObject.write("{:#^80}\n".format(' '))
 
 if __name__ == '__main__':
-    main()
+    scrape_amazon_for_isbn_options(trial_list_of_ISBNs)
+
+    

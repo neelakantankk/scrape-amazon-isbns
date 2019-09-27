@@ -46,13 +46,7 @@ def get_buying_options(url_to_page):
         page_number = time.strftime("%H%M%S")
 
 
-    logger.debug("Writing to file...")
-    with file_dump_folder.joinpath(f"amazon_page_{isbn}_{page_number}.html").open(mode="wb") as fObject:
-        fObject.write(amazon_page.content)
-    logger.debug(f"File amazon_page_{isbn}_{page_number}.html written")
-
     amazon_html = lhtml.fromstring(amazon_page.content)
-
 
     next_button = amazon_html.xpath(
             f".//ul[@class='a-pagination']/li[{contains_class('a-last')}]")
