@@ -77,7 +77,8 @@ def main():
                     "w",encoding='utf-8') as fObject:
         for isbn in item_results.keys():
             fObject.write("{:#^80}\n".format(' '))
-            fObject.write(f"ISBN: {isbn}\n")
+            fObject.write(f"ISBN: {isbn}")
+            fObject.write(f" \u2013 Number of sellers found: {len(item_results[isbn])}\n")
             for olpOffer in item_results[isbn]:
                 fObject.write("{:-^80}\n".format(''))
                 fObject.write(f"\tSeller: {olpOffer.olpSeller}\n")
