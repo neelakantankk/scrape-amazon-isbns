@@ -32,7 +32,7 @@ trial_list_of_ISBNs = [
 
 
 #-------------------------------__main__-------------------------------------#
-def scrape_amazon_for_isbn_options(list_of_isbns):
+def scrape_amazon_for_isbn_options(list_of_ISBNs):
 
     #---------------------Required Amazon URLs-----------------------#
     amazon_urls = {
@@ -87,6 +87,8 @@ def scrape_amazon_for_isbn_options(list_of_isbns):
                 fObject.write(f"\tShips from: {olpOffer.olpDelivery}\n")
                 fObject.write(f"\tPrice (including shipping): {olpOffer.olpPrice}\n")
             fObject.write("{:#^80}\n".format(' '))
+
+    return item_results
 
 if __name__ == '__main__':
     scrape_amazon_for_isbn_options(trial_list_of_ISBNs)

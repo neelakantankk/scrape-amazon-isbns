@@ -67,7 +67,7 @@ def extract_from_amazon_page(amazon_html):
                      node.xpath(
                          f".//div[{contains_class('olpDeliveryColumn')}]//span[@class='a-list-item']//text()"))).group(1)
         except AttributeError:
-            logger.error(f'Could not find delivery in "' + re.sub(r"\s{2,}",
+            logger.debug(f'Could not find delivery in "' + re.sub(r"\s{2,}",
                 ' ',
                 ''.join(
                 node.xpath(
