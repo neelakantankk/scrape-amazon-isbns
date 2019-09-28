@@ -3,7 +3,12 @@ import openpyxl
 import logging
 import json
 import logging.config
+import time
 from scrape_amazon_for_isbn_options import scrape_amazon_for_isbn_options
+
+def chunk(full_list, size_of_chunk):
+    for i in range(0, len(full_list),size_of_chunk):
+        yield full_list[i:i+size_of_chunk]
 
 def main():
     #-----------------------------Set up logging-------------------------#
@@ -22,38 +27,41 @@ def main():
     isbn_book = openpyxl.load_workbook("Live_ISBNs_201908.xlsx",read_only=True,data_only=True)
     isbn_sheet = isbn_book.active
 
-    isbns = [row[1].value for row in isbn_sheet.iter_rows(min_row=2)]
+    all_isbns = [row[1].value for row in isbn_sheet.iter_rows(min_row=2)]
 
-    logger.debug(f"Number of isbns: {len(isbns)}")
     
-    item_results = scrape_amazon_for_isbn_options(isbns)
 
-    output_book = openpyxl.Workbook()
-    output_sheet = output_book.active
-    output_sheet.title = "ISBNs_and_Seller_Data"
+    for isbns in chunk(all_isbns, 30):
+        logger.debug(f"Number of isbns: {len(isbns)}")
+        item_results = scrape_amazon_for_isbn_options(isbns)
 
-    output_sheet.append(["ISBN13",
+        output_book = openpyxl.Workbook()
+        output_sheet = output_book.active
+        output_sheet.title = "ISBNs_and_Seller_Data"
+
+        output_sheet.append(["ISBN13",
                          "Seller Name", 
                          "Link to seller's amazon page",
                          "Condition of product (New/Used)",
                          "Shipped from",
                          "Price"])
 
-    logger.debug("Writing to Book ISBNs_and_Seller_Data.xlsx")
-    for isbn,results in item_results.items():
-        for olpOffer in results:
-            output_sheet.append([isbn,
+        date_time = time.strftime("%Y%m%d_%H%M%S")
+        logger.debug(f"Writing to Book ISBNs_and_Seller_Data_{date_time}.xlsx")
+        for isbn,results in item_results.items():
+            for olpOffer in results:
+                output_sheet.append([isbn,
                                  olpOffer.olpSeller,
                                  olpOffer.olpSellerLink,
                                  olpOffer.olpCondition,
                                  olpOffer.olpDelivery,
                                  olpOffer.olpPrice])
 
-    try:
-        output_book.save("file-dump/ISBNs_and_Seller_Data.xlsx")
-        logger.debug("File ISBNS_and_Seller_Data.xlsx written successfully")
-    except Exception as e:
-        logger.error("Could not save file ISBNS_and_Seller_Data.xlsx")
+        try:
+            output_book.save(f"file-dump/ISBNs_and_Seller_Data_{date_time}.xlsx")
+            logger.debug(f"File ISBNS_and_Seller_Data_{date_time}.xlsx written successfully")
+        except Exception as e:
+            logger.error("Could not save file ISBNS_and_Seller_Data_{date_time}.xlsx")
 
 
 if __name__ == '__main__':
