@@ -10,6 +10,7 @@ import logging
 from collections import namedtuple
 import re
 from urllib.parse import urljoin
+import pdb
 
 
 def contains_class(class_name):
@@ -39,9 +40,20 @@ def extract_from_amazon_page(amazon_html):
 
         logger.debug(f"Seller is {seller}")
 
-        seller_link = node.xpath(
-                f".//div[{contains_class('olpSellerColumn')}]/h3//a")[0].get("href")
-        seller_link = urljoin(r"https://amazon.com",seller_link)
+        try:
+            seller_link = node.xpath(
+                 f".//div[{contains_class('olpSellerColumn')}]/h3//a")[0].get("href")
+            seller_link = urljoin(r"https://amazon.com",seller_link)
+
+        except Exception as e:
+            if node.xpath(
+                    f".//div[{contains_class('olpSellerColumn')}]/h3/img"):
+                seller = "Amazon Exports LLC"
+                seller_link = "https://amazon.com"
+            else:
+                logger.error(f"{seller} threw exception {e.__class__.__name__}:\n\t{e}")
+                logger.error(f"Node that caused it is {node}, {node.get('class')}")
+                seller_link = ''
 
         logger.debug(f"Link to seller is {seller_link}")
         

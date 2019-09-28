@@ -12,6 +12,7 @@ import json
 from get_buying_options import get_buying_options
 from exceptions import PageNotRetrievedError
 from isbn_converter import isbn_converter
+from requests.exceptions import Timeout as TimeOutError
 
 trial_list_of_ISBNs = [
         '9781292040622',
@@ -39,27 +40,18 @@ def scrape_amazon_for_isbn_options(list_of_ISBNs):
             'search':r'https://amazon.com/s',
             'buying_options':r'https://amazon.com/gp/offer-listing/',
             }
-
-
-    #-----------------------------Set up logging-------------------------#
-    if not pathlib.Path.cwd().joinpath('logs').exists():
-        pathlib.Path.cwd().joinpath('logs').mkdir()
-    if not pathlib.Path.cwd().joinpath('file-dump').exists():
-        pathlib.Path.cwd().joinpath('file-dump').mkdir()
-    
+   
     file_dump_folder = pathlib.Path.cwd().joinpath('file-dump')
-
-    with open('logging_config.json','r',encoding='utf-8') as fObject:
-        log_config = json.load(fObject)
-    logging.config.dictConfig(log_config)
 
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
     #-------------------------------------Calling ISBNs------------#
     item_results = dict()
-    
-    for isbn in list_of_ISBNs:
+    isbns_to_process = len(list_of_ISBNs) 
+    for count, isbn in enumerate(list_of_ISBNs,start=1):
+
+        logger.debug(f"Processing {count} of {isbns_to_process}")
 
         logger.debug(f"ISBN to fetch: {isbn}")
         url_to_page = f'{amazon_urls["buying_options"]}{isbn_converter(isbn)}'
@@ -70,23 +62,9 @@ def scrape_amazon_for_isbn_options(list_of_ISBNs):
             logger.debug(f"Buying options retrieved")
         except PageNotRetrievedError as e:
             logger.error(f"{e}")
+        except TimeOutError as e:
+            logger.error(f"{e}")
 
-
-    with file_dump_folder.joinpath(
-            "ISBN_and_Buying_Options.txt").open(
-                    "w",encoding='utf-8') as fObject:
-        for isbn in item_results.keys():
-            fObject.write("{:#^80}\n".format(' '))
-            fObject.write(f"ISBN: {isbn}")
-            fObject.write(f" \u2013 Number of sellers found: {len(item_results[isbn])}\n")
-            for olpOffer in item_results[isbn]:
-                fObject.write("{:-^80}\n".format(''))
-                fObject.write(f"\tSeller: {olpOffer.olpSeller}\n")
-                fObject.write(f"\tLink to Seller: {olpOffer.olpSellerLink}\n")
-                fObject.write(f"\tCondition: {olpOffer.olpCondition}\n")
-                fObject.write(f"\tShips from: {olpOffer.olpDelivery}\n")
-                fObject.write(f"\tPrice (including shipping): {olpOffer.olpPrice}\n")
-            fObject.write("{:#^80}\n".format(' '))
 
     return item_results
 

@@ -1,5 +1,5 @@
 import requests
-from requests.exceptions import ChunkedEncodingError
+from requests.exceptions import ChunkedEncodingError, Timeout as TimeOutError
 import pathlib
 import logging
 import lxml.html as lhtml
@@ -23,17 +23,18 @@ def get_buying_options(url_to_page):
 
     logger.debug(f"Fetching page {url_to_page}")
     try:
-        amazon_page = session.get(url_to_page)
+        amazon_page = session.get(url_to_page, timeout=30)
     except ChunkedEncodingError as e:
         logger.error(f"Could not call {url_to_page}. Got {e}")
-        logger.info(f"Trying to call {url_tp_page} again")
-        amazon_page = session.get(url_to_page)
-
-
+        logger.info(f"Trying to call {url_to_page} again")
+        amazon_page = session.get(url_to_page,timeout=60)
+    except TimeOutError:
+        logger.error(f"Call to {url_to_page} timed out")
+        raise TimeOutError("Call to {url_to_page} timed out")
 
     if amazon_page.status_code != 200:
         logger.error(f"Fetching {url_to_page} did not work")
-        raise PageNotRetrievedError(f"Could not call {url_to_page}") 
+        raise PageNotRetrievedError(f"Could not call {url_to_page}. Status code: {amazon_page.status_code}") 
     else:
         logger.info(f"Fetched page {url_to_page}")
 
