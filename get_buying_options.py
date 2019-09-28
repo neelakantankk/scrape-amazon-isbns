@@ -35,15 +35,15 @@ def get_buying_options(url_to_page):
         raise TimeOutError("Call to {url_to_page} timed out")
 
     DELAY = 15
-    if amazon_page.status_code == 503: 
-            logger.debug(f"{url_to_page} returned {amazon_page.status_code}")
-            logger.debug(f"Pausing operations for {DELAY} seconds...")
-            time.sleep(DELAY)
-            logger.debug(f"Resuming operations")
-            amazon_page = session.get(url_to_page, timeout = 60)
-            if amazon_page.status_code != 200:
-                raise PageNotRetrievedError(f"Could not call {url_to_page}. Status code: {amazon_page.status_code}")
-    elif amazon_page.status_code != 200:
+#    if amazon_page.status_code == 503: 
+#            logger.debug(f"{url_to_page} returned {amazon_page.status_code}")
+#            logger.debug(f"Pausing operations for {DELAY} seconds...")
+#            time.sleep(DELAY)
+#            logger.debug(f"Resuming operations")
+#            amazon_page = session.get(url_to_page, timeout = 60)
+#            if amazon_page.status_code != 200:
+#                raise PageNotRetrievedError(f"Could not call {url_to_page}. Status code: {amazon_page.status_code}")
+    if amazon_page.status_code != 200:
         logger.error(f"Fetching {url_to_page} did not work")
         raise PageNotRetrievedError(f"Could not call {url_to_page}. Status code: {amazon_page.status_code}") 
     else:
