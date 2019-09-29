@@ -10,7 +10,7 @@ import logging
 import logging.config
 import json
 from get_buying_options import get_buying_options
-from exceptions import PageNotRetrievedError
+from exceptions import PageNotRetrievedError, ServiceUnavailableError 
 from isbn_converter import isbn_converter
 from requests.exceptions import Timeout as TimeOutError
 
@@ -64,6 +64,8 @@ def scrape_amazon_for_isbn_options(list_of_ISBNs):
             logger.error(f"{e}")
         except TimeOutError as e:
             logger.error(f"{e}")
+        except ServiceUnavailableError as e:
+            raise ServiceUnavailableError(f"{isbn}",f"{e}",item_results)
 
 
     return item_results

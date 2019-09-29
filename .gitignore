@@ -5,3 +5,4 @@ file-dump/*
 __pycache__/*
 notes.txt
 *.swp
+start_index_config.json

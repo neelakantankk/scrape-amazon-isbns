@@ -4,7 +4,7 @@ import pathlib
 import logging
 import lxml.html as lhtml
 import time
-from exceptions import PageNotRetrievedError
+from exceptions import PageNotRetrievedError, ServiceUnavailableError
 from extract_from_amazon_page import extract_from_amazon_page, contains_class
 from urllib.parse import urljoin
 from parse_amazon_url import parse_amazon_url
@@ -19,7 +19,7 @@ def get_buying_options(url_to_page):
     session = requests.Session()
 
     session.headers = {
-            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0'
+            'User-Agent':'Mozilla/5.0 (X11; Linux x86_64; rv:69.0) Gecko/20100101 Firefox/69.0'
             }
 
     logger.debug(f"Fetching page {url_to_page}")
@@ -34,16 +34,10 @@ def get_buying_options(url_to_page):
         logger.error(f"Call to {url_to_page} timed out")
         raise TimeOutError("Call to {url_to_page} timed out")
 
-    DELAY = 15
-#    if amazon_page.status_code == 503: 
-#            logger.debug(f"{url_to_page} returned {amazon_page.status_code}")
-#            logger.debug(f"Pausing operations for {DELAY} seconds...")
-#            time.sleep(DELAY)
-#            logger.debug(f"Resuming operations")
-#            amazon_page = session.get(url_to_page, timeout = 60)
-#            if amazon_page.status_code != 200:
-#                raise PageNotRetrievedError(f"Could not call {url_to_page}. Status code: {amazon_page.status_code}")
-    if amazon_page.status_code != 200:
+    if amazon_page.status_code == 503: 
+            logger.debug(f"{url_to_page} returned {amazon_page.status_code}")
+            raise ServiceUnavailableError(f"{url_to_page}")
+    elif amazon_page.status_code != 200:
         logger.error(f"Fetching {url_to_page} did not work")
         raise PageNotRetrievedError(f"Could not call {url_to_page}. Status code: {amazon_page.status_code}") 
     else:
